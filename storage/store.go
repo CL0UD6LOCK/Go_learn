@@ -11,6 +11,7 @@ var ErrNotFound = errors.New("student not found")
 type StudentStore interface {
 	List() ([]models.Student, error)
 	Get(id int) (models.Student, error)
+	Create(s models.Student) (models.Student, error)
 }
 
 type FileStore struct {
@@ -46,4 +47,27 @@ func (fs *FileStore) Get(id int) (models.Student, error) {
 	}
 	// 循环结束还没找到，return models.Student{} 和 ErrNotFound
 	return models.Student{}, ErrNotFound
+}
+
+func (fs *FileStore) Create(s models.Student) (models.Student, error) {
+	maxID := 0
+	fs.mu.Lock()
+	for _, ex := range fs.students {
+		if ex.ID > maxID {
+			maxID = ex.ID
+		}
+	}
+	s.ID = maxID + 1
+	students := make([]models.Student, len(fs.students))
+	copy(students, fs.students)
+	students = append(students, s)
+	err := SaveStudents(students)
+	if err == nil {
+		fs.students = students
+	}
+	fs.mu.Unlock()
+	if err != nil {
+		return models.Student{}, err
+	}
+	return s, nil
 }
