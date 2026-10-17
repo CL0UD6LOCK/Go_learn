@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -92,23 +93,17 @@ func (h *StudentHandler) StudentByIDHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	if r.Method == "GET" {
-		var foundStudent models.Student
-		found := false
-		h.mu.Lock()
-		for _, s := range h.Students {
-			if s.ID == id {
-				found = true
-				foundStudent = s
-				break
-			}
-		}
-		h.mu.Unlock()
-		if found {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(foundStudent)
+		s, err := h.Store.Get(id)
+		if errors.Is(err, storage.ErrNotFound) {
+			http.Error(w, "student not found", http.StatusNotFound)
 			return
 		}
-		http.Error(w, "student not found", http.StatusNotFound)
+		if err != nil {
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(s)
 		return
 	}
 
