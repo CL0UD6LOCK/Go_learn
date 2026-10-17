@@ -19,9 +19,14 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
+	fs, err := storage.NewFileStore()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	h := &handlers.StudentHandler{
 		Students: students,
+		Store:    fs,
 	}
 
 	http.HandleFunc("/students", h.StudentHandler)

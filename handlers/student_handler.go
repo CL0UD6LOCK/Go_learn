@@ -13,6 +13,7 @@ import (
 type StudentHandler struct {
 	Students []models.Student
 	mu       sync.Mutex
+	Store    storage.StudentStore
 }
 
 func (h *StudentHandler) Count() int {
@@ -31,15 +32,12 @@ func (h *StudentHandler) StudentHandler(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method == "GET" {
-		h.mu.Lock()
-		students := make([]models.Student, len(h.Students))
-		copy(students, h.Students)
-		h.mu.Unlock()
-		err := json.NewEncoder(w).Encode(students)
+		students, err := h.Store.List()
 		if err != nil {
 			http.Error(w, "server error", http.StatusInternalServerError)
 			return
 		}
+		json.NewEncoder(w).Encode(students)
 		return
 	}
 	if r.Method == "POST" {
