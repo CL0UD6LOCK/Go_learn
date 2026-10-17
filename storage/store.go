@@ -51,6 +51,7 @@ func (fs *FileStore) Get(id int) (models.Student, error) {
 
 func (fs *FileStore) Create(s models.Student) (models.Student, error) {
 	maxID := 0
+	defer fs.mu.Unlock()
 	fs.mu.Lock()
 	for _, ex := range fs.students {
 		if ex.ID > maxID {
@@ -65,9 +66,31 @@ func (fs *FileStore) Create(s models.Student) (models.Student, error) {
 	if err == nil {
 		fs.students = students
 	}
-	fs.mu.Unlock()
 	if err != nil {
 		return models.Student{}, err
 	}
 	return s, nil
+}
+
+func (fs *FileStore) Update(id int, name *string, age *int) (models.Student, error) {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	students := make([]models.Student, len(fs.students))
+	copy(students, fs.students)
+	for _, i := range students {
+		if i.ID == id {
+			if name != nil {
+				i.Name = *name
+			}
+			if age != nil {
+				i.Age = *age
+			}
+			err := SaveStudents(fs.students)
+			if err != nil {
+				return models.Student{}, err
+			}
+			fs.students = students
+		}
+	}
+	return models.Student{}, ErrNotFound
 }

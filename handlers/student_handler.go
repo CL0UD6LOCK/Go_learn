@@ -41,38 +41,20 @@ func (h *StudentHandler) StudentHandler(w http.ResponseWriter, r *http.Request) 
 		json.NewEncoder(w).Encode(students)
 		return
 	}
-	if r.Method == "POST" {
+	if r.Method == "POST" { //POST现在只管 JSON 和 状态码
 		var s models.Student
-		err := json.NewDecoder(r.Body).Decode(&s)
+		err := json.NewDecoder(r.Body).Decode(&s) // 请求体 JSON -> 结构体
 		if err != nil {
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
-		maxID := 0
-		h.mu.Lock()
-		for _, ex := range h.Students {
-			if ex.ID > maxID {
-				maxID = ex.ID
-			}
-		}
-		s.ID = maxID + 1
-		students := make([]models.Student, len(h.Students))
-		copy(students, h.Students)
-		students = append(students, s)
-		err = storage.SaveStudents(students)
-		if err == nil {
-			h.Students = students
-		}
-		h.mu.Unlock()
+		created, err := h.Store.Create(s)
 		if err != nil {
 			http.Error(w, "failed to save students", http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
-		err = json.NewEncoder(w).Encode(s)
-		if err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(created) // 结构体 -> 响应 JSON
 		return
 	}
 
