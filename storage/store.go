@@ -13,6 +13,7 @@ type StudentStore interface {
 	Get(id int) (models.Student, error)
 	Create(s models.Student) (models.Student, error)
 	Update(id int, name *string, age *int) (models.Student, error)
+	Delete(id int) error
 }
 
 type FileStore struct {
@@ -95,4 +96,23 @@ func (fs *FileStore) Update(id int, name *string, age *int) (models.Student, err
 		}
 	}
 	return models.Student{}, ErrNotFound
+}
+
+func (fs *FileStore) Delete(id int) error {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+	students := make([]models.Student, len(fs.students))
+	copy(students, fs.students)
+	for i := range students {
+		if students[i].ID == id {
+			students = append(students[:i], students[i+1:]...)
+			err := SaveStudents(students)
+			if err != nil {
+				return err
+			}
+			fs.students = students
+			return nil
+		}
+	}
+	return ErrNotFound
 }

@@ -8,20 +8,10 @@ import (
 	"strings"
 	"studentmanager/models"
 	"studentmanager/storage"
-	"sync"
 )
 
 type StudentHandler struct {
-	Students []models.Student
-	mu       sync.Mutex
-	Store    storage.StudentStore
-}
-
-func (h *StudentHandler) Count() int {
-	h.mu.Lock()
-	temp := len(h.Students)
-	h.mu.Unlock()
-	return temp
+	Store storage.StudentStore
 }
 
 type UpdateStudent struct {
@@ -120,29 +110,13 @@ func (h *StudentHandler) StudentByIDHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	if r.Method == "DELETE" {
-		found := false
-		var saveErr error
-		h.mu.Lock()
-		students := make([]models.Student, len(h.Students))
-		copy(students, h.Students)
-		for i := range students {
-			if students[i].ID == id {
-				found = true
-				students = append(students[:i], students[i+1:]...)
-				saveErr = storage.SaveStudents(students)
-				break
-			}
-		}
-		if found && saveErr == nil {
-			h.Students = students
-		}
-		h.mu.Unlock()
-		if !found {
+		err := h.Store.Delete(id)
+		if errors.Is(err, storage.ErrNotFound) {
 			http.Error(w, "student not found", http.StatusNotFound)
 			return
 		}
-		if saveErr != nil {
-			http.Error(w, "failed to save students", http.StatusInternalServerError)
+		if err != nil {
+			http.Error(w, "failed to delete", http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
