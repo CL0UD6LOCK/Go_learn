@@ -12,6 +12,7 @@ type StudentStore interface {
 	List() ([]models.Student, error)
 	Get(id int) (models.Student, error)
 	Create(s models.Student) (models.Student, error)
+	Update(id int, name *string, age *int) (models.Student, error)
 }
 
 type FileStore struct {
@@ -77,19 +78,20 @@ func (fs *FileStore) Update(id int, name *string, age *int) (models.Student, err
 	defer fs.mu.Unlock()
 	students := make([]models.Student, len(fs.students))
 	copy(students, fs.students)
-	for _, i := range students {
-		if i.ID == id {
+	for i := range students {
+		if students[i].ID == id {
 			if name != nil {
-				i.Name = *name
+				students[i].Name = *name
 			}
 			if age != nil {
-				i.Age = *age
+				students[i].Age = *age
 			}
-			err := SaveStudents(fs.students)
+			err := SaveStudents(students)
 			if err != nil {
 				return models.Student{}, err
 			}
 			fs.students = students
+			return students[i], nil
 		}
 	}
 	return models.Student{}, ErrNotFound

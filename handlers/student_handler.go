@@ -91,9 +91,6 @@ func (h *StudentHandler) StudentByIDHandler(w http.ResponseWriter, r *http.Reque
 
 	if r.Method == "PATCH" || r.Method == "PUT" {
 		var updated UpdateStudent
-		var result models.Student
-		found := false
-		var saveErr error
 		err := json.NewDecoder(r.Body).Decode(&updated)
 		if err != nil {
 			http.Error(w, "bad request", http.StatusBadRequest)
@@ -109,44 +106,16 @@ func (h *StudentHandler) StudentByIDHandler(w http.ResponseWriter, r *http.Reque
 				return
 			}
 		}
-		h.mu.Lock()
-		students := make([]models.Student, len(h.Students))
-		copy(students, h.Students)
-		for i := range students {
-			if students[i].ID == id {
-				found = true
-				result = students[i]
-				if updated.Name != nil {
-					result.Name = *updated.Name
-				}
-				if updated.Age != nil {
-					result.Age = *updated.Age
-				}
-				students[i] = result
-				saveErr = storage.SaveStudents(students)
-				break
-			}
-		}
-		if found && saveErr == nil {
-			h.Students = students
-		}
-		h.mu.Unlock()
-
-		if !found {
+		updated2, err := h.Store.Update(id, updated.Name, updated.Age)
+		if errors.Is(err, storage.ErrNotFound) {
 			http.Error(w, "student not found", http.StatusNotFound)
 			return
 		}
-
-		if saveErr != nil {
+		if err != nil {
 			http.Error(w, "failed to save students", http.StatusInternalServerError)
 			return
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(result)
-		if err != nil {
-			return
-		}
+		json.NewEncoder(w).Encode(updated2)
 		return
 	}
 
