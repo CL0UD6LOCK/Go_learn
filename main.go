@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"studentmanager/handlers"
 	"studentmanager/storage"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -14,11 +15,13 @@ func main() {
 		return
 	}
 	h := &handlers.StudentHandler{Store: fs}
-
-	http.HandleFunc("/students", h.StudentHandler)
-	http.HandleFunc("/students/", h.StudentByIDHandler)
+	router := gin.Default()
+	router.GET("/students", h.ListStudents)
+	router.GET("/students/:id", h.GetStudent)
+	//http.HandleFunc("/students", h.StudentHandler)
+	//http.HandleFunc("/students/", h.StudentByIDHandler)
 	fmt.Println("Starting server at http://localhost:8080/students (Ctrl+C to stop)")
-	err = http.ListenAndServe(":8080", nil)
+	err = router.Run(":8080")
 	if err != nil {
 		fmt.Println(err)
 	}
