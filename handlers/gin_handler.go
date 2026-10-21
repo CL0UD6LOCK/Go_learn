@@ -39,9 +39,11 @@ func (h *StudentHandler) CreateStudent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	_, err = h.Store.Create(s)
+	created, err := h.Store.Create(s)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(http.StatusCreated, created)
+
 }
