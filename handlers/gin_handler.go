@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"studentmanager/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,4 +30,18 @@ func (h *StudentHandler) GetStudent(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, student)
+}
+
+func (h *StudentHandler) CreateStudent(c *gin.Context) {
+	var s models.Student
+	err := c.ShouldBindJSON(&s)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	_, err = h.Store.Create(s)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 }
