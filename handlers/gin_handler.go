@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"studentmanager/models"
+	"studentmanager/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,4 +48,23 @@ func (h *StudentHandler) CreateStudent(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, created)
 
+}
+
+func (h *StudentHandler) DeleteStudent(c *gin.Context) {
+	idText := c.Param("id")
+	id, err := strconv.Atoi(idText)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	err = h.Store.Delete(id)
+	if errors.Is(err, storage.ErrNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
