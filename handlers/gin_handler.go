@@ -10,6 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type StudentHandler struct {
+	Store storage.StudentStore
+}
+
+type UpdateStudent struct {
+	Name *string `json:"name"`
+	Age  *int    `json:"age"`
+}
+
 func (h *StudentHandler) ListStudents(c *gin.Context) {
 	students, err := h.Store.List()
 	if err != nil {
