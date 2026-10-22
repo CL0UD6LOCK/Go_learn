@@ -101,6 +101,7 @@ func (h *StudentHandler) UpdateStudent(c *gin.Context) {
 	}
 	if c.Request.Method == http.MethodPatch && req.Name == nil && req.Age == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "empty request body"})
+		return
 	}
 	updated, err := h.Store.Update(id, req.Name, req.Age)
 	if errors.Is(err, storage.ErrNotFound) {
