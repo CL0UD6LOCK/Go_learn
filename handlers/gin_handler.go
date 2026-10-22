@@ -68,3 +68,28 @@ func (h *StudentHandler) DeleteStudent(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+func (h *StudentHandler) UpdateStudent(c *gin.Context) {
+	idText := c.Param("id")
+	id, err := strconv.Atoi(idText)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	var req models.Student
+	err = c.ShouldBindJSON(&req)
+	if err != nil { //客户端发的json有问题
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	updated, err := h.Store.Update(id, &req.Name, &req.Age)
+	if errors.Is(err, storage.ErrNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "student not found"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, updated)
+}
