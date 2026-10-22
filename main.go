@@ -20,6 +20,8 @@ func main() {
 	router.GET("/students/:id", h.GetStudent)
 	router.POST("/students", h.CreateStudent)
 	router.DELETE("/students/:id", h.DeleteStudent)
+	router.PUT("/students/:id", h.UpdateStudent)
+	router.PATCH("/students/:id", h.UpdateStudent)
 
 	fmt.Println("Starting server at http://localhost:8080/students (Ctrl+C to stop)")
 	err = router.Run(":8080")
