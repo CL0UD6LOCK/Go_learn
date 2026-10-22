@@ -41,7 +41,7 @@ func (h *StudentHandler) GetStudent(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "student not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
 	c.JSON(http.StatusOK, student)
@@ -89,13 +89,17 @@ func (h *StudentHandler) UpdateStudent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	var req models.Student
+	var req UpdateStudent
 	err = c.ShouldBindJSON(&req)
 	if err != nil { //客户端发的json有问题
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	updated, err := h.Store.Update(id, &req.Name, &req.Age)
+	if c.Request.Method == http.MethodPut && (req.Name == nil || req.Age == nil) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	updated, err := h.Store.Update(id, req.Name, req.Age)
 	if errors.Is(err, storage.ErrNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "student not found"})
 		return
