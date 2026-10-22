@@ -36,6 +36,10 @@ func (h *StudentHandler) GetStudent(c *gin.Context) {
 		return
 	}
 	student, err := h.Store.Get(id)
+	if errors.Is(err, storage.ErrNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "student not found"})
 		return
