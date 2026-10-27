@@ -6,10 +6,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	_ "github.com/go-sql-driver/mysql" //只注册驱动
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found, using system environment")
+	}
 	dsn := os.Getenv("MYSQL_DSN")
 	if dsn == "" {
 		log.Fatal("MYSQL_DSN environment variable is not set")
