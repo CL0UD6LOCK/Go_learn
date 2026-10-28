@@ -11,10 +11,10 @@ import (
 	_ "github.com/go-sql-driver/mysql" //只注册驱动
 )
 
-type NullInt64 struct {
-	Int64 int64 //真正的数字
-	Valid bool  //true有值，false代表NULL
-}
+//type NullInt64 struct {
+//	Int64 int64 //真正的数字
+//	Valid bool  //true有值，false代表NULL
+//}
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -50,7 +50,7 @@ func main() {
 		if age.Valid {
 			fmt.Println(id, name, age.Int64)
 		} else {
-			fmt.Println(id, name, age)
+			fmt.Println(id, name, "NULL")
 		}
 	}
 	if err := rows.Err(); err != nil {
