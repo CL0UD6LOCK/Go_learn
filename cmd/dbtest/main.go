@@ -41,8 +41,9 @@ func main() {
 	defer rows.Close()
 
 	for rows.Next() {
-		var id, age int
+		var id int
 		var name string
+		var age sql.NullInt64
 		if err := rows.Scan(&id, &name, &age); err != nil {
 			log.Fatal(err)
 		}
