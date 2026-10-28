@@ -47,7 +47,11 @@ func main() {
 		if err := rows.Scan(&id, &name, &age); err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(id, name, age)
+		if age.Valid {
+			fmt.Println(id, name, age.Int64)
+		} else {
+			fmt.Println(id, name, age)
+		}
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
