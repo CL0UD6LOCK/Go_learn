@@ -11,6 +11,11 @@ import (
 	_ "github.com/go-sql-driver/mysql" //只注册驱动
 )
 
+type NullInt64 struct {
+	Int64 int64 //真正的数字
+	Valid bool  //true有值，false代表NULL
+}
+
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("no .env file found, using system environment")
