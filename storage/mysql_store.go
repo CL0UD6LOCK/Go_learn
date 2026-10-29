@@ -27,5 +27,14 @@ func (s *MySQLStore) List() ([]models.Student, error) {
 		if err := rows.Scan(&st.ID, &st.Name, &age); err != nil {
 			return nil, err
 		}
+		if age.Valid {
+			st.Age = int(age.Int64)
+		} else {
+			st.Age = 0
+		}
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return students, nil
 }
