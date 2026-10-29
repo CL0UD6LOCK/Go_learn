@@ -32,6 +32,7 @@ func (s *MySQLStore) List() ([]models.Student, error) {
 		} else {
 			st.Age = 0
 		}
+		students = append(students, st)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
