@@ -11,10 +11,20 @@ type MySQLStore struct {
 }
 
 func NewMySQLStore(db *sql.DB) *MySQLStore {
-
+	return &MySQLStore{db: db}
 }
 
 func List() {
+	db, err := sql.Open("mysql", "List")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.Fatal(err)
+	}
+
 	rows, err := db.Query("SELECT id,name,age FROM students")
 	if err != nil {
 		log.Fatal(err)
