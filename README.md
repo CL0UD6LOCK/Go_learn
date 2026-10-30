@@ -1,1 +1,2 @@
-Golang+MySQL+Gin Concurrent Server
+MySQL+Gin Concurrent Server
+based on Golang
