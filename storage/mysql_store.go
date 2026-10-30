@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
 	"studentmanager/models"
 )
 
@@ -38,4 +39,22 @@ func (s *MySQLStore) List() ([]models.Student, error) {
 		return nil, err
 	}
 	return students, nil
+}
+
+func (s *MySQLStore) Get(id int) (models.Student, error) {
+	var st models.Student
+	var age sql.NullInt64
+	err := s.db.QueryRow("SELECT id,name,age FROM students WHERE id = ?", id).Scan(&st.ID, &st.Name, &age)
+	if errors.Is(err, sql.ErrNoRows) {
+		return models.Student{}, ErrNotFound
+	}
+	if err != nil {
+		return models.Student{}, err
+	}
+	if age.Valid {
+		st.Age = int(age.Int64)
+	} else {
+		st.Age = 0
+	}
+	return st, nil
 }
