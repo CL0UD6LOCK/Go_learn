@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"studentmanager/models"
-	"studentmanager/storage"
 
 	"github.com/joho/godotenv"
 
@@ -35,13 +33,6 @@ func main() {
 	if err := db.Ping(); err != nil {
 		log.Fatal(err)
 	}
-
-	store := storage.NewMySQLStore(db)
-	created, err := store.Create(models.Student{Name: "createtest", Age: 20})
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("created:", created)
 
 	rows, err := db.Query("SELECT id,name,age FROM students")
 	if err != nil {
