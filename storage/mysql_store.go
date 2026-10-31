@@ -58,3 +58,16 @@ func (s *MySQLStore) Get(id int) (models.Student, error) {
 	}
 	return st, nil
 }
+
+func (s *MySQLStore) Create(st models.Student) (models.Student, error) {
+	res, err := s.db.Exec("INSERT INTO students (name,age) VALUES (?,?)", st.Name, st.Age)
+	if err != nil {
+		return models.Student{}, err
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return models.Student{}, err
+	}
+	st.ID = int(id)
+	return st, nil
+}
